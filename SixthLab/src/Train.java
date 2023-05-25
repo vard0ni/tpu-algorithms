@@ -1,3 +1,5 @@
+import java.util.Random;
+
 public class Train {
     private String name;
     private int capacity;
@@ -11,13 +13,23 @@ public class Train {
 
     public void addPassenger(Passenger passenger) {
         passengerQueue.enqueue(passenger);
-        System.out.println("Passenger " + passenger.getName() + " boarded Train " + name);
+        System.out.println("Пассажир " + passenger.getName() + " сел в поезд " + name);
     }
 
-    public void removePassengers() {
+    public void removePassengers(int numPassengersToExit) {
+        /* 
         while (!passengerQueue.isEmpty()) {
             Passenger passenger = passengerQueue.dequeue();
-            System.out.println("Passenger " + passenger.getName() + " exited Train " + name);
+            System.out.println("Пассажир " + passenger.getName() + " вышел из поезда " + name);
+        }
+        */
+        if (numPassengersToExit > passengerQueue.size()) {
+            numPassengersToExit = passengerQueue.size();
+        }
+        for (int i = 0; i < numPassengersToExit; i++) {
+            Passenger passenger = passengerQueue.dequeue();
+            System.out.println("Пассажир " + passenger.getName() + " вышел из поезда " + name);
+            //passengerQueue.dequeue();
         }
     }
 

@@ -28,7 +28,7 @@ public class Queue<T> {
 
     public T dequeue() {
         if (isEmpty()) {
-            throw new NoSuchElementException("Queue is empty");
+            throw new NoSuchElementException("Очередь пуста");
         }
 
         T data = head.data;
@@ -44,7 +44,7 @@ public class Queue<T> {
 
     public T peek() {
         if (isEmpty()) {
-            throw new NoSuchElementException("Queue is empty");
+            throw new NoSuchElementException("Очередь пуста");
         }
         return head.data;
     }

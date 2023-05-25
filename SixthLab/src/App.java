@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Arrays;
 
 public class App extends JFrame {
-    private static final int NUM_STATIONS = 5;
-    private static final int TRAIN_CAPACITY = 100;
+    private static final int NUM_STATIONS = 10;
+    private static final int TRAIN_CAPACITY = 30;
     private static final int MAX_PASSENGERS_PER_STATION = 20;
     private static final int MAX_TRAIN_INTERVAL = 5;
 
@@ -28,9 +28,9 @@ public class App extends JFrame {
     private ChartPanel chartPanel;
 
     public App() {
-        setTitle("Subway Simulation");
+        setTitle("Симуляция метро");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(900, 800);
+        setSize(1000, 800);
         setLocationRelativeTo(null);
 
         dataset = createDataset();
@@ -42,7 +42,7 @@ public class App extends JFrame {
         JScrollPane scrollPane = new JScrollPane(logTextArea);
         add(scrollPane, BorderLayout.CENTER);
 
-        JButton startButton = new JButton("Start Simulation");
+        JButton startButton = new JButton("Начать моделирование");
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -55,14 +55,14 @@ public class App extends JFrame {
     private DefaultCategoryDataset createDataset() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int i = 0; i < NUM_STATIONS; i++) {
-            dataset.addValue(0, "Passenger Queue", "Station " + (i + 1));
+            dataset.addValue(0, "Очередь пассажиров", "Станция " + (i + 1));
         }
         return dataset;
     }
 
     private JFreeChart createChart(DefaultCategoryDataset dataset) {
         JFreeChart chart = ChartFactory.createBarChart(
-                "Passenger Queue Size", "Station", "Queue Size",
+                "Размер очереди пассажиров", "Станция", "Размер очереди",
                 dataset, PlotOrientation.VERTICAL, false, true, false);
         CategoryPlot plot = (CategoryPlot) chart.getPlot();
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
@@ -74,7 +74,7 @@ public class App extends JFrame {
     private void updateChart(List<Station> stations) {
         for (int i = 0; i < NUM_STATIONS; i++) {
             Station station = stations.get(i);
-            dataset.setValue(station.getQueueSize(), "Passenger Queue", "Station " + (i + 1));
+            dataset.setValue(station.getQueueSize(), "Очередь пассажиров", "Станция " + (i + 1));
         }
     }
 
@@ -84,10 +84,10 @@ public class App extends JFrame {
         train = new Train("A", TRAIN_CAPACITY);
 
         for (int i = 0; i < NUM_STATIONS; i++) {
-            stations[i] = new Station("Station " + (i + 1));
+            stations[i] = new Station("Станция " + (i + 1));
             int numPassengers = random.nextInt(MAX_PASSENGERS_PER_STATION);
             for (int j = 0; j < numPassengers; j++) {
-                Passenger passenger = new Passenger("P" + (j + 1));
+                Passenger passenger = new Passenger("П" + (j + 1));
                 stations[i].addPassenger(passenger);
             }
         }
@@ -100,21 +100,25 @@ public class App extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (currentStationIndex < NUM_STATIONS) {
                     Station currentStation = stations[currentStationIndex];
-                    logTextArea.append("Train " + train.getName() + " arrived at " + currentStation.getName() + "\n");
+                    logTextArea.append("Поезд " + train.getName() + " прибыл на " + currentStation.getName() + "\n");
+
+                    // Часть пассажиров выходит из поезда
+                    int numPassengersToExit = random.nextInt(currentStation.getPassengerQueue().size() + 1);
+                    train.removePassengers(numPassengersToExit);
 
                     int numPassengersToBoard = Math.min(currentStation.getPassengerQueue().size(), train.getAvailableSeats());
                     for (int i = 0; i < numPassengersToBoard; i++) {
                         Passenger passenger = currentStation.getPassengerQueue().dequeue();
                         train.addPassenger(passenger);
                     }
-
-                    train.removePassengers();
+                    System.out.println(numPassengersToExit + " пассажиров вышло из поезда.");
+                    //train.removePassengers();
 
                     currentStationIndex++;
                     if (currentStationIndex < NUM_STATIONS) {
                         int trainInterval = random.nextInt(MAX_TRAIN_INTERVAL) + 1;
-                        logTextArea.append("Train " + train.getName() + " departed from " + currentStation.getName() + "\n");
-                        logTextArea.append("Next train will arrive in " + trainInterval + " minutes.\n\n");
+                        logTextArea.append("Поезд " + train.getName() + " отправился из " + currentStation.getName() + "\n");
+                        logTextArea.append("Следующий поезд прибудет через " + trainInterval + " минут.\n\n");
                         try {
                             Thread.sleep(trainInterval * 1000); // Convert minutes to milliseconds
                         } catch (InterruptedException ex) {
@@ -122,7 +126,7 @@ public class App extends JFrame {
                         }
                     }
                 } else {
-                    logTextArea.append("Train " + train.getName() + " reached the end of the line.\n");
+                    logTextArea.append("Поезд " + train.getName() + " дошел до конца очереди.\n");
                     trainTimer.stop();
                 }
             }

@@ -9,7 +9,7 @@ public class Station {
 
     public void addPassenger(Passenger passenger) {
         passengerQueue.enqueue(passenger);
-        System.out.println("Passenger " + passenger.getName() + " arrived at Station " + name);
+        System.out.println("Пассажир " + passenger.getName() + " прибыл на станцию " + name);
     }
 
     public Queue<Passenger> getPassengerQueue() {
