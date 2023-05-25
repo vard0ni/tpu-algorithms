@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -8,8 +7,6 @@ import java.awt.event.ActionListener;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.Dataset;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
