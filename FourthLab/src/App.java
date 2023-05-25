@@ -7,12 +7,21 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.awt.event.ActionEvent;
 
 public class App extends JFrame {
     private JTextField inputTextField;
     private JTextArea outputTextArea;
     private JTextArea countOfBytesTextArea;
+
+    // Ограниченность числа битов в формате float означает, что некоторые числа не могут быть точно представлены. Это может привести к ошибкам округления,
+    // особенно при выполнении сложных арифметических операций или при вычислении чисел, которые не могут быть точно представлены в формате float, таких как некоторые десятичные дроби.
+
+    // Например, рассмотрим число 0.1, которое не может быть точно представлено в формате float. При попытке преобразовать его в двоичный вид,
+    // возникают бесконечные циклы из-за конечного числа битов в мантиссе. Поэтому число 0.1 будет приближенно представлено, и возникает ошибка представления.
+
 
     public App() {
         setTitle("Lab 4 - Data Types");
@@ -82,6 +91,69 @@ public class App extends JFrame {
         });
     }
 
+    // Метод для перевода float в двоичное представление (int)
+    private static int floatToIntBits(float value) {
+        int floatBits = 0;
+
+        // Получение знака числа
+        if (value < 0) {
+            floatBits |= 1 << 31;
+            value = -value;
+        }
+
+        // Преобразование в целое число и дробную часть
+        int intValue = (int) value;
+        float fraction = value - intValue;
+
+        // Получение степени числа
+        int exponent = 0;
+        if (intValue != 0) {
+            exponent = 127 + Integer.numberOfLeadingZeros(intValue);
+            intValue <<= 8 - Integer.numberOfLeadingZeros(intValue);
+        } else if (fraction != 0) {
+            exponent = -Integer.numberOfTrailingZeros(Float.floatToRawIntBits(fraction));
+        }
+
+        // Соединение знака, степени и мантиссы
+        floatBits |= (exponent + 127) << 23;
+        floatBits |= intValue & 0x7FFFFF;
+
+        return floatBits;
+    }
+
+    // Метод для перевода двоичного представления (int) в float
+    private static float intBitsToFloat(int bits) {
+        int sign = (bits >> 31 == 0) ? 1 : -1;
+        int exponent = ((bits >> 23) & 0xFF) - 127;
+        int mantissa = bits & 0x7FFFFF;
+
+        float value = 0;
+        if (exponent == -127) {
+            if (mantissa != 0) {
+                float fraction = 0.5f;
+                for (int i = 0; i < 23; i++) {
+                    if ((mantissa & (1 << (22 - i))) != 0) {
+                        value += fraction;
+                    }
+                    fraction /= 2;
+                }
+            }
+        } else {
+            value = 1;
+            float fraction = 0.5f;
+            for (int i = 0; i < 23; i++) {
+                if ((mantissa & (1 << (22 - i))) != 0) {
+                    value += fraction;
+                }
+                fraction /= 2;
+            }
+            value *= Math.pow(2, exponent);
+        }
+        return sign * value;
+    }
+
+
+
     public String printFloatRepresentation(float num) {
         
         int binary = Float.floatToIntBits(num);
@@ -96,6 +168,10 @@ public class App extends JFrame {
         String sign2 = Integer.toBinaryString(sign);
         String exponent2 = Integer.toBinaryString(exponent);
         String mantissa2 = Integer.toBinaryString(mantissa);
+
+
+        
+    
 
         // определить знак числа
         int sign3 = binary2.charAt(0) == '0' ? 1 : -1;
@@ -126,7 +202,10 @@ public class App extends JFrame {
             }
 
         }
-    
+        //BigDecimal decimalValue = new BigDecimal(new BigInteger(tmp, 2));
+        //float floatValue = decimalValue.floatValue();
+
+
         
         float convert = (float) (sign3 * mantissa3 * Math.pow(2, exponent3));
 
@@ -138,10 +217,13 @@ public class App extends JFrame {
                         "Mantissa: " + mantissa2 + "\n" +
                         "Convert from binary to float: " + binaryToFloat(tmp) + "\n";
 
-        float reconstructed = Float.intBitsToFloat(binary);
-        if (reconstructed != num) {
-            result += "Error: Loss of precision in binary representation\n";
-            result += "Recovered number: " + reconstructed;
+        //float reconstructed = Float.intBitsToFloat(binary);
+        System.out.println(num);
+        System.out.println(binaryToFloat(tmp));
+
+        if (num != binaryToFloat(tmp)) {
+            result += "Ошибка: потеря точности в двоичном представлении\n";
+            result += "Восстановленное число: " + num;
         }
         result += "\n";
         return result;
@@ -227,8 +309,23 @@ public class App extends JFrame {
                         "Binary: " + tmp + "\n" +
                         "Convert from binary to long: " + convert + "\n";
 
+        float floatValue = 0.1f; // Тестовое значение float
+
+        int floatBits = Float.floatToRawIntBits(floatValue); // Получение двоичного представления в виде int
+
+        String binaryString = Integer.toBinaryString(floatBits); // Преобразование в строку
+
+        BigDecimal decimalValue = new BigDecimal(floatValue);
+        BigDecimal convertedValue = new BigDecimal(new BigInteger(binaryString, 2));
+
+        System.out.println(decimalValue);
+        System.out.println(convertedValue);
+
+        System.out.println(decimalValue.equals(convertedValue)); // Проверка ошибки представления числа
+
         result += "\n";
         return result;
+        
     }
 
     public String printCountOfBytesFloat(float num) {
