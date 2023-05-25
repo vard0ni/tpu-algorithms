@@ -323,6 +323,7 @@ public class App extends JFrame {
         infoArea.setWrapStyleWord(true);
         JScrollPane scroll = new JScrollPane(infoArea);
 
+
         JLabel firstTaskLabel = new JLabel("Shell sort");
         JLabel secondTaskLabel = new JLabel("Quick sort");
         JLabel thirdTaskLabel = new JLabel("Bubble sort");
