@@ -24,14 +24,13 @@ public class Book {
         this.Name = Name;
         this.Author = Author;
         this.Pages = Pages;
-        if (o != 0)
-        {
-            A = new int[10000000];
-            Random rand = new Random();
-            for (int i = 0; i < A.length; ++i)
-            {
-                A[i] = rand.nextInt();
-            }
+        //if (o != 0)
+        //{
+         A = new int[10000000];
+        Random rand = new Random();
+        for (int i = 0; i < A.length; ++i) {
+            A[i] = rand.nextInt();
         }
+        //}
     }
 }

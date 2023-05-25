@@ -3,6 +3,10 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
 
@@ -10,17 +14,36 @@ public class Form extends JFrame {
     private static int o;
     private static int g;
     public static JTextArea infoArea = new JTextArea(40, 40);
+    private long memoryAllocated; // размер памяти в байтах
 
     private static void showMemory() {
-        //MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-        //long memorySize = memoryUsage.getUsed() / 1024;
 
-        Runtime runtime = Runtime.getRuntime();
-        long totalMemory = runtime.totalMemory();
-        long freeMemory = runtime.freeMemory();
-        long usedMemory = totalMemory - freeMemory;
+        //Runtime runtime = Runtime.getRuntime();
+        //long totalMemory = runtime.totalMemory();
+        //long freeMemory = runtime.freeMemory();
+        //long usedMemory = totalMemory - freeMemory;
 
-        infoArea.append("usedMemory: " + usedMemory + " KB\n\n");
+        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        long usedMemory = memoryUsage.getUsed();
+        long usedMemoryKB = usedMemory / 1024;
+
+        infoArea.append("usedMemory: " + usedMemoryKB + " KB\n\n");
+    }
+    
+    // Метод для измерения использования памяти в диспетчере задач (для Linux)
+    private static long getTaskManagerMemory() {
+        try {
+            Process process = Runtime.getRuntime().exec("ps -p $$ -o rss=");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = reader.readLine();
+            if (line != null) {
+                long memoryInKb = Long.parseLong(line.trim());
+                return memoryInKb; 
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public static void main(String[] args) throws Exception {
@@ -47,13 +70,21 @@ public class Form extends JFrame {
     String[] Authors = {"Томас Манн", "Сомерсет Моэм", "Оскар Уайльд", "Шилле Фридрих", "Юкио Мисима", "Марк Твен", "Фёдор Достоевский",
                         "Фрэнсис Скотт Фицджеральд", "Александр Герцен", "Ипполит Тэн"};
 
-    
+    //long taskManagerMemory = getTaskManagerMemory();
+    //System.out.println("Use memory in task manager: " + taskManagerMemory + " KB");
+
+    // Получаем использование памяти
+    MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+    // Выводим информацию о памяти в MB
+    long usedMemoryMB = memoryUsage.getUsed() / (1024 * 1024);
+    System.out.println("Использование памяти: " + usedMemoryMB + " MB");
+
 
     Stack stack = new Stack();
     Queue queue = new Queue();
     Deque deque = new Deque();
     
-    showMemory();
+    
     
     //====================================================================
 
@@ -63,7 +94,7 @@ public class Form extends JFrame {
     JScrollPane scrollPane = new JScrollPane(infoArea);
 
     panelRight.add(scrollPane);
-
+    
     //====================================================================
 
     JPanel inputDataPanel = new JPanel(new GridLayout(3, 2, 0, 5));
@@ -119,6 +150,8 @@ public class Form extends JFrame {
 
     panelLeft.add(garbageCollectorPanel, BorderLayout.SOUTH);
 
+    
+
     //====================================================================
 
     ActionListener buttonActionListener = new ActionListener() {
@@ -126,12 +159,20 @@ public class Form extends JFrame {
         public void actionPerformed(ActionEvent e) {
             if (smallObjectSize.isSelected()) {
                 o = 0;
+                System.out.println("Choose small object size: o = 0");
             } else if (bigObjectSize.isSelected()) {
                 o = 1;
+                System.out.println("Choose big object size: o = 1");
+                if (forcedGarbageCollector.isSelected())
+                {
+                    g = 1;
+                }
             } else if (autoGarbageCollector.isSelected()) {
                 g = 0;
+                System.out.println("Choose auto garbage collector: g = 0");
             } else if (forcedGarbageCollector.isSelected()) {
                 g = 1;
+                System.out.println("Choose forced garbage collector: g = 1");
             }
         }
     };
@@ -298,6 +339,12 @@ public class Form extends JFrame {
             }
         }
     });
+
+    
+
+    
+
+
     structuresPanel.add(popBackQueue);
     
     mainPanel.add(panelLeft, BorderLayout.WEST);

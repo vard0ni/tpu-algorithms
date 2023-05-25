@@ -364,3 +364,62 @@ public class App {
     }
 }
 */
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class App {
+    public static void main(String[] args) {
+        // Создаем экземпляр стека
+        Stack stack = new Stack();
+
+        // Измеряем начальный размер памяти
+        long initialMemory = getUsedMemory();
+
+        // Добавляем незначительные объекты в стек
+        for (int i = 0; i < 100; i++) {
+            stack.push(i);
+        }
+
+        // Измеряем размер памяти после добавления незначительных объектов
+        long memoryAfterAddingSmallObjects = getUsedMemory();
+
+        // Добавляем элемент, содержащий массив из ста тысяч целочисленных элементов
+        int[] largeArray = new int[100000];
+        stack.push(largeArray);
+
+        // Измеряем размер памяти после добавления элемента с большим массивом
+        long memoryAfterAddingLargeObject = getUsedMemory();
+
+        // Выводим результаты
+        System.out.println("Размер памяти перед добавлением: " + initialMemory + " байт");
+        System.out.println("Размер памяти после добавления незначительных объектов: " + memoryAfterAddingSmallObjects + " байт");
+        System.out.println("Размер памяти после добавления объекта с большим массивом: " + memoryAfterAddingLargeObject + " байт");
+
+        // Сравниваем с использованием диспетчера задач
+        long taskManagerMemory = getTaskManagerMemory();
+        System.out.println("Использование памяти в диспетчере задач: " + taskManagerMemory + " байт");
+    }
+
+    // Метод для измерения размера выделенной памяти
+    private static long getUsedMemory() {
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.totalMemory() - runtime.freeMemory();
+    }
+
+    // Метод для измерения использования памяти в диспетчере задач (для Linux)
+    private static long getTaskManagerMemory() {
+        try {
+            Process process = Runtime.getRuntime().exec("ps -p $$ -o rss=");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = reader.readLine();
+            if (line != null) {
+                long memoryInKb = Long.parseLong(line.trim());
+                return memoryInKb * 1024; // Конвертируем в байты
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+}
